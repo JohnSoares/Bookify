@@ -1,4 +1,5 @@
 ﻿using Bookify.Domain.Abstractions;
+using Bookify.Domain.Shared;
 using System;
 using System.Collections.Generic;
 using System.Text;
