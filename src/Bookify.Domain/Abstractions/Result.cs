@@ -1,4 +1,6 @@
-﻿namespace Bookify.Domain.Abstractions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bookify.Domain.Abstractions;
 
 public class Result
 {
@@ -45,7 +47,8 @@ public class Result<TValue> : Result
     {
         _value = value;
     }
-    
+
+    [NotNull]
     public TValue Value => IsSuccess
         ? _value!
         : throw new InvalidOperationException("The value of a failure result can not be accessed.");
