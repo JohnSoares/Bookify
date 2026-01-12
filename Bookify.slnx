@@ -6,4 +6,7 @@
     <Project Path="src/Bookify.Infrastructure/Bookify.Infrastructure.csproj" Id="6ce4cdaf-6fcc-4168-980d-6e8b07609fbf" />
   </Folder>
   <Folder Name="/test/" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
 </Solution>
