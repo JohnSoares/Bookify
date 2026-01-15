@@ -26,7 +26,7 @@ public class LoggingBehavior<TRequest, TResponse>
         {
             _logger.LogInformation("Executing command {Command}.", requestName);
 
-            TResponse response = await next();
+            TResponse response = await next(cancellationToken);
 
             _logger.LogInformation("Command {Command} processed successfully.", requestName);
 

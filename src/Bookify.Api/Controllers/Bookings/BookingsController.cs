@@ -2,14 +2,13 @@
 using Bookify.Application.Bookings.ReserveBooking;
 using Bookify.Domain.Abstractions;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bookify.Api.Controllers.Bookings;
 
 [ApiController]
 [Route("api/bookings")]
-public class BookingsController : ControllerBase
+internal sealed class BookingsController : ControllerBase
 {
     private readonly ISender _sender;
     public BookingsController(ISender sender)

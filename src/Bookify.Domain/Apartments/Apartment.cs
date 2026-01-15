@@ -1,8 +1,5 @@
 ﻿using Bookify.Domain.Abstractions;
 using Bookify.Domain.Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bookify.Domain.Apartments;
 
@@ -25,6 +22,8 @@ public sealed class Apartment : Entity
         CleaningFee = cleaningFee;
         Amenities = amenities;
     }
+
+    public Apartment(){ }
 
     public Name Name { get; private set; }
 
