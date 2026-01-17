@@ -1,5 +1,3 @@
-version: '3.4'
-
 services:
   bookify.api:
     image: ${DOCKER_REGISTRY-}bookifyapi
@@ -18,6 +16,9 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - ./.containers/database:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     ports:
-      - 5432:5432
+      - 55432:5432
+
+volumes:
+  postgres-data:

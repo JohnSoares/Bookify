@@ -7,7 +7,7 @@ namespace Bookify.Api.Controllers.Apartments;
 
 [ApiController]
 [Route("api/apartments")]
-internal sealed class ApartmentsController : ControllerBase
+public class ApartmentsController : ControllerBase
 {
     private readonly ISender _sender;
 
@@ -17,6 +17,7 @@ internal sealed class ApartmentsController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<ApartmentResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SearchApartments(
         DateOnly startDate,
         DateOnly endDate,

@@ -14,8 +14,5 @@ internal sealed class ReserveBookingCommandValidator : AbstractValidator<Reserve
 
         RuleFor(x => x.StartDate)
             .LessThan(x => x.EndDate).WithMessage("StartDate must be before EndDate.");
-
-        RuleFor(x => x.EndDate)
-            .GreaterThan(x => x.StartDate).WithMessage("EndDate must be after StartDate.");
     }
 }
