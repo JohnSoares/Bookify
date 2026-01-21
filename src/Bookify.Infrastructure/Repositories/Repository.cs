@@ -24,6 +24,6 @@ internal abstract class Repository<T>
 
     public virtual void Add(T entity)
     {
-        DbContext.Set<T>().Add(entity);
+        DbContext.Add(entity);
     }
 }
