@@ -1,23 +1,26 @@
 ﻿using MediatR;
 using Bookify.Application.Abstractions.Messaging;
 using Microsoft.Extensions.Logging;
+using Bookify.Domain.Abstractions;
+using Serilog.Context;
 
 namespace Bookify.Application.Abstractions.Behaviors;
 
 public class LoggingBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IBaseCommand
+    where TResponse : Result
 {
-    private readonly ILogger<TRequest> _logger;
+    private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
 
-    public LoggingBehavior(ILogger<TRequest> logger)
+    public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
     {
         _logger = logger;
     }
 
     public async Task<TResponse> Handle(
-        TRequest request, 
-        RequestHandlerDelegate<TResponse> next, 
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         string requestName = typeof(TRequest).Name;
@@ -26,22 +29,31 @@ public class LoggingBehavior<TRequest, TResponse>
         {
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                _logger.LogInformation("Executing command {Command}.", requestName);
+                _logger.LogInformation("Executing request {RequestName}.", requestName);
             }
 
             TResponse response = await next(cancellationToken);
 
-
-            if (_logger.IsEnabled(LogLevel.Information))
+            if (response.IsSuccess)
             {
-                _logger.LogInformation("Command {Command} processed successfully.", requestName);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Request {RequestName} processed successfully.", requestName);
+                }
+            }
+            else
+            {
+                using (LogContext.PushProperty("Error", response.Error, true))
+                {
+                    _logger.LogError("Request {RequestName} processed with error", requestName);
+                }
             }
 
             return response;
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
-            _logger.LogError(exception, "Command {Command} processing failed.", requestName);
+            _logger.LogError(exception, "Request {RequestName} processing failed.", requestName);
             throw;
         }
     }
