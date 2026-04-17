@@ -20,15 +20,22 @@ public class LoggingBehavior<TRequest, TResponse>
         RequestHandlerDelegate<TResponse> next, 
         CancellationToken cancellationToken)
     {
-        string requestName = request.GetType().Name;
+        string requestName = typeof(TRequest).Name;
 
         try
         {
-            _logger.LogInformation("Executing command {Command}.", requestName);
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation("Executing command {Command}.", requestName);
+            }
 
             TResponse response = await next(cancellationToken);
 
-            _logger.LogInformation("Command {Command} processed successfully.", requestName);
+
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation("Command {Command} processed successfully.", requestName);
+            }
 
             return response;
         }

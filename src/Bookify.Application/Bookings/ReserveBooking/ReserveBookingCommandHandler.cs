@@ -64,6 +64,8 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
                 _dateTimeProvider.UtcNow,
                 _pricingService);
 
+            _bookingRepository.Add(booking);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return booking.Id;
