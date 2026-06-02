@@ -1,6 +1,8 @@
 using Bookify.Api.Extensions;
 using Bookify.Application;
 using Bookify.Infrastructure;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -25,7 +27,7 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 
     // REMARK: Uncomment if you want to seed initial data.
-    app.SeedData();
+    //app.SeedData();
 }
 
 app.UseHttpsRedirection();
@@ -41,5 +43,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();
