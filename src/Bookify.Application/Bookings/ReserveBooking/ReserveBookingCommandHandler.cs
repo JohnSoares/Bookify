@@ -18,9 +18,9 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
     private readonly IDateTimeProvider _dateTimeProvider;
 
     public ReserveBookingCommandHandler(
-        IBookingRepository bookingRepository,
         IUserRepository userRepository,
         IApartmentRepository apartmentRepository,
+        IBookingRepository bookingRepository,
         IUnitOfWork unitOfWork,
         PricingService pricingService,
         IDateTimeProvider dateTimeProvider)
