@@ -27,7 +27,7 @@ public class ApartmentsController : ControllerBase
         DateOnly endDate,
         CancellationToken cancellationToken)
     {
-        var query = new SearchApartmentQuery(startDate, endDate);
+        var query = new SearchApartmentsQuery(startDate, endDate);
 
         Result<IReadOnlyList<ApartmentResponse>> result = await _sender.Send(query, cancellationToken);
 

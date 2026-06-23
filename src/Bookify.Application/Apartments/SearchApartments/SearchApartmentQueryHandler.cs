@@ -8,7 +8,7 @@ using Dapper;
 namespace Bookify.Application.Apartments.SearchApartments;
 
 internal sealed class SearchApartmentQueryHandler
-    : IQueryHandler<SearchApartmentQuery, IReadOnlyList<ApartmentResponse>>
+    : IQueryHandler<SearchApartmentsQuery, IReadOnlyList<ApartmentResponse>>
 {
     private static readonly int[] ActiveBookingStatuses =
     {
@@ -24,7 +24,7 @@ internal sealed class SearchApartmentQueryHandler
         _sqlConnectionFactory = sqlConnectionFactory;
     }
 
-    public async Task<Result<IReadOnlyList<ApartmentResponse>>> Handle(SearchApartmentQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyList<ApartmentResponse>>> Handle(SearchApartmentsQuery request, CancellationToken cancellationToken)
     {
         if(request.StartDate > request.EndDate)
         {
