@@ -1,16 +1,17 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/src/Bookify.Api/Bookify.Api.csproj" Id="5d345ea0-f659-451f-91b1-281cbe62d05b" />
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/src/Bookify.Application/Bookify.Application.csproj" Id="3d7eb4c4-3954-481c-b63e-fc852607819a" />
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/src/Bookify.Domain/Bookify.Domain.csproj" Id="143a36df-0fc0-428e-8add-1596ff9f8a0e" />
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/src/Bookify.Infrastructure/Bookify.Infrastructure.csproj" Id="6ce4cdaf-6fcc-4168-980d-6e8b07609fbf" />
+    <Project Path="src/Bookify.Api/Bookify.Api.csproj" Id="5d345ea0-f659-451f-91b1-281cbe62d05b" />
+    <Project Path="src/Bookify.Application/Bookify.Application.csproj" Id="3d7eb4c4-3954-481c-b63e-fc852607819a" />
+    <Project Path="src/Bookify.Domain/Bookify.Domain.csproj" Id="143a36df-0fc0-428e-8add-1596ff9f8a0e" />
+    <Project Path="src/Bookify.Infrastructure/Bookify.Infrastructure.csproj" Id="6ce4cdaf-6fcc-4168-980d-6e8b07609fbf" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/test/Bookify.Application.IntegrationTests/Bookify.Application.IntegrationTests.csproj" Id="e8196f54-39b6-4714-82ce-b40b2e43ed47" />
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/test/Bookify.Application.UnitTests/Bookify.Application.UnitTests.csproj" Id="f9c589b5-d5a6-4fce-b4ac-5e35590989c3" />
-    <Project Path="../../../../../../../../Estudo/Projects/Bookify/test/Bookify.Domain.UnitTests/Bookify.Domain.UnitTests.csproj" Id="6adfacb3-a598-467c-bfb6-19a5d5a309c1" />
+    <Project Path="test/Bookify.Api.FunctionalTests/Bookify.Api.FunctionalTests.csproj" Id="6bc2ea7f-1c10-421b-9777-300b399c06bc" />
+    <Project Path="test/Bookify.Application.IntegrationTests/Bookify.Application.IntegrationTests.csproj" Id="e8196f54-39b6-4714-82ce-b40b2e43ed47" />
+    <Project Path="test/Bookify.Application.UnitTests/Bookify.Application.UnitTests.csproj" Id="f9c589b5-d5a6-4fce-b4ac-5e35590989c3" />
+    <Project Path="test/Bookify.Domain.UnitTests/Bookify.Domain.UnitTests.csproj" Id="6adfacb3-a598-467c-bfb6-19a5d5a309c1" />
   </Folder>
-  <Project Path="../../../../../../../../Estudo/Projects/Bookify/docker-compose.dcproj">
+  <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
 </Solution>
