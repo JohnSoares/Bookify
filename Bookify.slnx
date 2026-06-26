@@ -9,6 +9,7 @@
     <Project Path="test/Bookify.Api.FunctionalTests/Bookify.Api.FunctionalTests.csproj" Id="6bc2ea7f-1c10-421b-9777-300b399c06bc" />
     <Project Path="test/Bookify.Application.IntegrationTests/Bookify.Application.IntegrationTests.csproj" Id="e8196f54-39b6-4714-82ce-b40b2e43ed47" />
     <Project Path="test/Bookify.Application.UnitTests/Bookify.Application.UnitTests.csproj" Id="f9c589b5-d5a6-4fce-b4ac-5e35590989c3" />
+    <Project Path="test/Bookify.ArchitectureTests/Bookify.ArchitectureTests.csproj" Id="f4c22daa-5cbb-416d-8661-986a00f1b9cf" />
     <Project Path="test/Bookify.Domain.UnitTests/Bookify.Domain.UnitTests.csproj" Id="6adfacb3-a598-467c-bfb6-19a5d5a309c1" />
   </Folder>
   <Project Path="docker-compose.dcproj">
