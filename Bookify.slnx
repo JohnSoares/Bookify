@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Solution items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Bookify.Api/Bookify.Api.csproj" Id="5d345ea0-f659-451f-91b1-281cbe62d05b" />
     <Project Path="src/Bookify.Application/Bookify.Application.csproj" Id="3d7eb4c4-3954-481c-b63e-fc852607819a" />
