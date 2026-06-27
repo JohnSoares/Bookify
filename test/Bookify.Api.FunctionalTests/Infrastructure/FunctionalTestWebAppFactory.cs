@@ -89,15 +89,12 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
 
     private async Task InitializeTestUserAsync()
     {
-        try
-        {
-            using HttpClient httpClient = CreateClient();
+        using HttpClient httpClient = CreateClient();
 
-            await httpClient.PostAsJsonAsync("api/v1/users/register", UserData.RegisterTestUserRequest);
-        }
-        catch
-        {
-            // Do nothing.
-        }
+        HttpResponseMessage response = await httpClient.PostAsJsonAsync(
+            "api/v1/users/register",
+            UserData.RegisterTestUserRequest);
+
+        response.EnsureSuccessStatusCode();
     }
 }

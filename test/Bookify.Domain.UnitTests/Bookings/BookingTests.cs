@@ -20,10 +20,9 @@ public class BookingTests : BaseTest
         var price = new Money(10.0m, Currency.USD);
         var duration = DateRange.Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
         Apartment apartment = ApartmentData.Create(price);
-        var pricingService = new PricingService();
 
         // Act
-        var booking = Booking.Reserve(apartment, user.Id, duration, DateTime.UtcNow, pricingService);
+        var booking = Booking.Reserve(apartment, user.Id, duration, DateTime.UtcNow);
 
         // Assert
         BookingReservedDomainEvent bookingReservedDomainEvent = AssertDomainEventWasPublished<BookingReservedDomainEvent>(booking);

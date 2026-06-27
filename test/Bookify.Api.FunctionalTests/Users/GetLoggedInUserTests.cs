@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Bookify.Api.FunctionalTests.Users;
 
+[Collection(FunctionalTestCollection.Name)]
 public class GetLoggedInUserTests : BaseFunctionalTest
 {
     public GetLoggedInUserTests(FunctionalTestWebAppFactory factory)

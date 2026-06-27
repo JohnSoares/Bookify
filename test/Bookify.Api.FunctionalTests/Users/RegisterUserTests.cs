@@ -6,6 +6,7 @@ using FluentAssertions;
 
 namespace Bookify.Api.FunctionalTests.Users;
 
+[Collection(FunctionalTestCollection.Name)]
 public class RegisterUserTests : BaseFunctionalTest
 {
     public RegisterUserTests(FunctionalTestWebAppFactory factory)

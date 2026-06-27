@@ -14,7 +14,6 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
     private readonly IApartmentRepository _apartmentRepository;
     private readonly IBookingRepository _bookingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly PricingService _pricingService;
     private readonly IDateTimeProvider _dateTimeProvider;
 
     public ReserveBookingCommandHandler(
@@ -22,14 +21,12 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
         IApartmentRepository apartmentRepository,
         IBookingRepository bookingRepository,
         IUnitOfWork unitOfWork,
-        PricingService pricingService,
         IDateTimeProvider dateTimeProvider)
     {
         _bookingRepository = bookingRepository;
         _userRepository = userRepository;
         _apartmentRepository = apartmentRepository;
         _unitOfWork = unitOfWork;
-        _pricingService = pricingService;
         _dateTimeProvider = dateTimeProvider;
     }
 
@@ -61,8 +58,7 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
                 apartment,
                 user.Id,
                 duration,
-                _dateTimeProvider.UtcNow,
-                _pricingService);
+                _dateTimeProvider.UtcNow);
 
             _bookingRepository.Add(booking);
 

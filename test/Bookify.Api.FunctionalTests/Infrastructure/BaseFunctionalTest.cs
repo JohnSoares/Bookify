@@ -5,7 +5,7 @@ using Bookify.Application.Users.LogInUser;
 
 namespace Bookify.Api.FunctionalTests.Infrastructure;
 
-public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFactory>
+public abstract class BaseFunctionalTest
 {
     protected readonly HttpClient HttpClient;
 
@@ -22,8 +22,12 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
                 UserData.RegisterTestUserRequest.Email,
                 UserData.RegisterTestUserRequest.Password));
 
-        AccessTokenResponse? accessTokenResponse = await loginResponse.Content.ReadFromJsonAsync<AccessTokenResponse>();
+        loginResponse.EnsureSuccessStatusCode();
 
-        return accessTokenResponse!.AccessToken;
+        AccessTokenResponse accessTokenResponse =
+            await loginResponse.Content.ReadFromJsonAsync<AccessTokenResponse>()
+            ?? throw new InvalidOperationException("Login did not return an access token.");
+
+        return accessTokenResponse.AccessToken;
     }
 }

@@ -6,6 +6,7 @@ using FluentAssertions;
 
 namespace Bookify.Api.FunctionalTests.Users;
 
+[Collection(FunctionalTestCollection.Name)]
 public class LoginUserTests : BaseFunctionalTest
 {
     private const string Email = "login@test.com";

@@ -16,10 +16,9 @@ public class PricingServiceTests
         var period = DateRange.Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
         var expectedTotalPrice = new Money(price.Amount * period.LengthInDays, price.Currency);
         Apartment apartment = ApartmentData.Create(price);
-        var pricingService = new PricingService();
 
         // Act
-        PricingDetails pricingDetails = pricingService.CalculatePrice(apartment, period);
+        PricingDetails pricingDetails = PricingService.CalculatePrice(apartment, period);
 
         // Assert
         pricingDetails.TotalPrice.Should().Be(expectedTotalPrice);
@@ -34,10 +33,9 @@ public class PricingServiceTests
         var period = DateRange.Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
         var expectedTotalPrice = new Money(price.Amount * period.LengthInDays + cleaningFee.Amount, price.Currency);
         Apartment apartment = ApartmentData.Create(price, cleaningFee);
-        var pricingService = new PricingService();
 
         // Act
-        PricingDetails pricingDetails = pricingService.CalculatePrice(apartment, period);
+        PricingDetails pricingDetails = PricingService.CalculatePrice(apartment, period);
 
         // Assert
         pricingDetails.TotalPrice.Should().Be(expectedTotalPrice);

@@ -43,7 +43,6 @@ public class ReserveBookingTests
             _apartmentRepositoryMock,
             _bookingRepositoryMock,
             _unitOfWorkMock,
-            new PricingService(),
             dateTimeProviderMock);
     }
 
