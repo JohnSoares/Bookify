@@ -1,10 +1,10 @@
-﻿namespace Bookify.Domain.Bookings;
+﻿using Bookify.Domain.Abstractions;
+
+namespace Bookify.Domain.Bookings;
 
 public record DateRange
 {
-    private DateRange()
-    {
-    }
+    private DateRange() { }
 
     public DateOnly Start { get; init; }
 
@@ -12,11 +12,11 @@ public record DateRange
 
     public int LengthInDays => End.DayNumber - Start.DayNumber;
 
-    public static DateRange Create(DateOnly start, DateOnly end)
+    public static Result<DateRange> Create(DateOnly start, DateOnly end)
     {
-        if (start > end)
+        if (start >= end)
         {
-            throw new ArgumentException("End date precedes start date.");
+            return Result.Failure<DateRange>(DateRangeErrors.InvalidRange);
         }
 
         return new DateRange

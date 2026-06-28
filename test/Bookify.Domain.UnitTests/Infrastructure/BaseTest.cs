@@ -7,7 +7,7 @@ public abstract class BaseTest
     public static T AssertDomainEventWasPublished<T>(Entity entity)
         where T : IDomainEvent
     {
-        T? domainEvent = entity.GetDomainEvents().OfType<T>().SingleOrDefault();
+        T? domainEvent = entity.DomainEvents.OfType<T>().SingleOrDefault();
 
         if (domainEvent is null)
         {

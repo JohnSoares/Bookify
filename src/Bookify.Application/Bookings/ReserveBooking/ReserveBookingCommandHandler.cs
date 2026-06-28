@@ -46,7 +46,16 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
             return Result.Failure<Guid>(ApartmentErrors.NotFound);
         }
 
-        var duration = DateRange.Create(request.StartDate, request.EndDate);
+        Result<DateRange> durationResult = DateRange.Create(
+            request.StartDate,
+            request.EndDate);
+
+        if (durationResult.IsFailure)
+        {
+            return Result.Failure<Guid>(durationResult.Error);
+        }
+
+        DateRange duration = durationResult.Value;
 
         if(await _bookingRepository.IsOverlappingAsync(apartment, duration, cancellationToken))
         {

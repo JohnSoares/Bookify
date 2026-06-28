@@ -25,6 +25,6 @@ public class ConfirmBookingTests : BaseIntegrationTest
         Result result = await Sender.Send(command);
 
         // Assert
-        result.Error.Should().Be(BookingErrors.NotFound);
+        result.Error.Should().Be(BookingErrors.NotFound(BookingId));
     }
 }

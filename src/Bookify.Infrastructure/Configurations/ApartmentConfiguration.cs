@@ -16,12 +16,14 @@ internal sealed class ApartmentConfiguration : IEntityTypeConfiguration<Apartmen
         builder.OwnsOne(apartment => apartment.Address);
 
         builder.Property(apartment => apartment.Name)
-            .HasMaxLength(200)
-            .HasConversion(description => description.Value, value => new Name(value));
+            .HasMaxLength(Name.MaxLength)
+            .HasConversion(name => name.Value, value => Name.Create(value).Value);
 
         builder.Property(apartment => apartment.Description)
-            .HasMaxLength(2000)
-            .HasConversion(description => description.Value, value => new Description(value));
+            .HasMaxLength(Description.MaxLength)
+            .HasConversion(
+                description => description.Value,
+                value => Description.Create(value).Value);
 
         builder.OwnsOne(apartment => apartment.Price, priceBuilder => priceBuilder.Property(money => money.Currency)
             .HasConversion(currency => currency.Code, code => Currency.FromCode(code)));

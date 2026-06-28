@@ -18,7 +18,9 @@ public class BookingTests : BaseTest
         // Arrange
         var user = User.Create(UserData.FirstName, UserData.LastName, UserData.Email);
         var price = new Money(10.0m, Currency.USD);
-        var duration = DateRange.Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
+        DateRange duration = DateRange
+            .Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10))
+            .Value;
         Apartment apartment = ApartmentData.Create(price);
 
         // Act

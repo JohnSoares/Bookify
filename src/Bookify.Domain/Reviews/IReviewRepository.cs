@@ -2,5 +2,5 @@
 
 public interface IReviewRepository
 {
-    void Add(Review review);
+    void Insert(Review review);
 }

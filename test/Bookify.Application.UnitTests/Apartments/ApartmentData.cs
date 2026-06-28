@@ -7,9 +7,9 @@ internal static class ApartmentData
 {
     public static Apartment Create() => new(
         Guid.NewGuid(),
-        new Name("Test apartment"),
-        new Description("Test description"),
-        new Address("Country", "State", "ZipCode", "City", "Street"),
+        Name.Create("Test apartment").Value,
+        Description.Create("Test description").Value,
+        Address.Create("Country", "State", "ZipCode", "City", "Street").Value,
         new Money(100.0m, Currency.USD),
         Money.Zero(),
         []);

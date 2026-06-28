@@ -4,7 +4,7 @@ namespace Bookify.Domain.Apartments;
 
 public static class ApartmentErrors
 {
-    public static readonly Error NotFound = new(
+    public static Error NotFound(Guid id) => Error.NotFound(
         "Apartment.NotFound",
-        "The apartment with the specified identifier was not found.");
+        $"The apartment with the Id = '{id}' was not found");
 }

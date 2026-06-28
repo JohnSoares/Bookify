@@ -9,7 +9,7 @@ internal sealed class UserRepository : Repository<User>, IUserRepository
     {
     }
 
-    public override void Add(User user)
+    public override void Insert(User user)
     {
         foreach(Role role in user.Roles)
         {

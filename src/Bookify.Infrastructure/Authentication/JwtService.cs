@@ -8,7 +8,7 @@ namespace Bookify.Infrastructure.Authentication;
 
 internal sealed class JwtService : IJwtService
 {
-    private static readonly Error AuthenticationFailed = new(
+    private static readonly Error AuthenticationFailed = Error.Failure(
         "Keycloak.AuthenticationFailed",
         "Failed to acquire access token do to authentication failure");
 

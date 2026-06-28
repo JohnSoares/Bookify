@@ -25,10 +25,27 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
         RegisterUserCommand request,
         CancellationToken cancellationToken)
     {
+        Result<FirstName> firstNameResult = FirstName.Create(request.FirstName);
+        Result<LastName> lastNameResult = LastName.Create(request.LastName);
+        Result<Email> emailResult = Email.Create(request.Email);
+
+        Result[] validationResults =
+        [
+            firstNameResult,
+            lastNameResult,
+            emailResult
+        ];
+
+        if (validationResults.Any(result => result.IsFailure))
+        {
+            return Result.Failure<Guid>(
+                ValidationError.FromResults(validationResults));
+        }
+
         var user = User.Create(
-            new FirstName(request.FirstName),
-            new LastName(request.LastName),
-            new Email(request.Email));
+            firstNameResult.Value,
+            lastNameResult.Value,
+            emailResult.Value);
 
         string identityId = await _authenticationService.RegisterAsync(
             user,
@@ -37,7 +54,7 @@ internal sealed class RegisterUserCommandHandler : ICommandHandler<RegisterUserC
 
         user.SetIdentityId(identityId);
 
-        _userRepository.Add(user);
+        _userRepository.Insert(user);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -13,7 +13,9 @@ public class PricingServiceTests
     {
         // Arrange
         var price = new Money(10.0m, Currency.USD);
-        var period = DateRange.Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
+        DateRange period = DateRange
+            .Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10))
+            .Value;
         var expectedTotalPrice = new Money(price.Amount * period.LengthInDays, price.Currency);
         Apartment apartment = ApartmentData.Create(price);
 
@@ -30,7 +32,9 @@ public class PricingServiceTests
         // Arrange
         var price = new Money(10.0m, Currency.USD);
         var cleaningFee = new Money(99.99m, Currency.USD);
-        var period = DateRange.Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
+        DateRange period = DateRange
+            .Create(new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10))
+            .Value;
         var expectedTotalPrice = new Money(price.Amount * period.LengthInDays + cleaningFee.Amount, price.Currency);
         Apartment apartment = ApartmentData.Create(price, cleaningFee);
 

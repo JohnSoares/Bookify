@@ -54,7 +54,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
             .Select(entry => entry.Entity)
             .SelectMany(entity =>
             {
-                IReadOnlyList<IDomainEvent> domainEvents = entity.GetDomainEvents();
+                IReadOnlyList<IDomainEvent> domainEvents = entity.DomainEvents;
 
                 entity.ClearDomainEvents();
 

@@ -22,7 +22,7 @@ internal abstract class Repository<T>
             .FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
     }
 
-    public virtual void Add(T entity)
+    public virtual void Insert(T entity)
     {
         DbContext.Add(entity);
     }

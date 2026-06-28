@@ -25,6 +25,6 @@ public class GetBookingTests : BaseIntegrationTest
         Result<BookingResponse> result = await Sender.Send(query);
 
         // Assert
-        result.Error.Should().Be(BookingErrors.NotFound);
+        result.Error.Should().Be(BookingErrors.NotFound(BookingId));
     }
 }

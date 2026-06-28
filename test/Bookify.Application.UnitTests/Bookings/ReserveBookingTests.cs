@@ -58,7 +58,7 @@ public class ReserveBookingTests
         Result<Guid> result = await _handler.Handle(Command, default);
 
         // Assert
-        result.Error.Should().Be(UserErrors.NotFound);
+        result.Error.Should().Be(UserErrors.NotFound(Command.UserId));
     }
 
     [Fact]
@@ -79,7 +79,36 @@ public class ReserveBookingTests
         Result<Guid> result = await _handler.Handle(Command, default);
 
         // Assert
-        result.Error.Should().Be(ApartmentErrors.NotFound);
+        result.Error.Should().Be(ApartmentErrors.NotFound(Command.ApartmentId));
+    }
+
+    [Fact]
+    public async Task Handle_Should_ReturnFailure_WhenDateRangeIsInvalid()
+    {
+        // Arrange
+        User user = UserData.Create();
+        Apartment apartment = ApartmentData.Create();
+        var command = new ReserveBookingCommand(
+            Command.UserId,
+            Command.ApartmentId,
+            Command.StartDate,
+            Command.StartDate);
+
+        _userRepositoryMock
+            .GetByIdAsync(command.UserId, Arg.Any<CancellationToken>())
+            .Returns(user);
+
+        _apartmentRepositoryMock
+            .GetByIdAsync(command.ApartmentId, Arg.Any<CancellationToken>())
+            .Returns(apartment);
+
+        // Act
+        Result<Guid> result = await _handler.Handle(command, default);
+
+        // Assert
+        result.Error.Should().Be(DateRangeErrors.InvalidRange);
+        await _bookingRepositoryMock.DidNotReceiveWithAnyArgs()
+            .IsOverlappingAsync(default!, default!, default);
     }
 
     [Fact]
@@ -88,7 +117,7 @@ public class ReserveBookingTests
         // Arrange
         User user = UserData.Create();
         Apartment apartment = ApartmentData.Create();
-        var duration = DateRange.Create(Command.StartDate, Command.EndDate);
+        DateRange duration = DateRange.Create(Command.StartDate, Command.EndDate).Value;
 
         _userRepositoryMock
             .GetByIdAsync(Command.UserId, Arg.Any<CancellationToken>())
@@ -115,7 +144,7 @@ public class ReserveBookingTests
         // Arrange
         User user = UserData.Create();
         Apartment apartment = ApartmentData.Create();
-        var duration = DateRange.Create(Command.StartDate, Command.EndDate);
+        DateRange duration = DateRange.Create(Command.StartDate, Command.EndDate).Value;
 
         _userRepositoryMock
             .GetByIdAsync(Command.UserId, Arg.Any<CancellationToken>())
@@ -146,7 +175,7 @@ public class ReserveBookingTests
         // Arrange
         User user = UserData.Create();
         Apartment apartment = ApartmentData.Create();
-        var duration = DateRange.Create(Command.StartDate, Command.EndDate);
+        DateRange duration = DateRange.Create(Command.StartDate, Command.EndDate).Value;
 
         _userRepositoryMock
             .GetByIdAsync(Command.UserId, Arg.Any<CancellationToken>())
@@ -173,7 +202,7 @@ public class ReserveBookingTests
         // Arrange
         User user = UserData.Create();
         Apartment apartment = ApartmentData.Create();
-        var duration = DateRange.Create(Command.StartDate, Command.EndDate);
+        DateRange duration = DateRange.Create(Command.StartDate, Command.EndDate).Value;
 
         _userRepositoryMock
             .GetByIdAsync(Command.UserId, Arg.Any<CancellationToken>())
@@ -190,6 +219,6 @@ public class ReserveBookingTests
         Result<Guid> result = await _handler.Handle(Command, default);
 
         // Assert
-        _bookingRepositoryMock.Received(1).Add(Arg.Is<Booking>(b => b.Id == result.Value));
+        _bookingRepositoryMock.Received(1).Insert(Arg.Is<Booking>(b => b.Id == result.Value));
     }
 }
