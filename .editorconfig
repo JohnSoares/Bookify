@@ -9,6 +9,12 @@ generated_code = true
 [**/Controllers/**.cs]
 dotnet_diagnostic.CA1515.severity = none
 
+[**/ICommand.cs]
+dotnet_diagnostic.S2326.severity = none
+
+[**/IQuery.cs]
+dotnet_diagnostic.S2326.severity = none
+
 #### Core EditorConfig Options ####
 
 # Indentation and spacing
