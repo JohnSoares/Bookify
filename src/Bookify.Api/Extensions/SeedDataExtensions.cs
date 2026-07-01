@@ -12,7 +12,7 @@ internal static class SeedDataExtensions
     {
         using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-        ISqlConnectionFactory sqlConnectionFactory = scope.ServiceProvider.GetRequiredService<ISqlConnectionFactory>();
+        IDbConnectionFactory sqlConnectionFactory = scope.ServiceProvider.GetRequiredService<IDbConnectionFactory>();
         using IDbConnection connection = sqlConnectionFactory.CreateConnection();
 
         var faker = new Faker();

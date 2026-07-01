@@ -19,14 +19,14 @@ internal sealed class ProcessOutboxMessagesJob : IJob
         TypeNameHandling = TypeNameHandling.All
     };
 
-    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+    private readonly IDbConnectionFactory _sqlConnectionFactory;
     private readonly IPublisher _publisher;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly OutboxOptions _outboxOptions;
     private readonly ILogger<ProcessOutboxMessagesJob> _logger;
 
     public ProcessOutboxMessagesJob(
-        ISqlConnectionFactory sqlConnectionFactory,
+        IDbConnectionFactory sqlConnectionFactory,
         IPublisher publisher,
         IDateTimeProvider dateTimeProvider,
         IOptions<OutboxOptions> outboxOptions,

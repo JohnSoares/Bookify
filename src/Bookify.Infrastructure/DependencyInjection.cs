@@ -77,7 +77,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
-        services.AddSingleton<ISqlConnectionFactory>(_ =>
+        services.AddSingleton<IDbConnectionFactory>(_ =>
             new SqlConnectionFacotry(connectionString));
 
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());

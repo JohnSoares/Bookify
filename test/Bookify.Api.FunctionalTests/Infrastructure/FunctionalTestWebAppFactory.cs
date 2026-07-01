@@ -47,9 +47,9 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
                     .UseNpgsql(connectionString)
                     .UseSnakeCaseNamingConvention());
 
-            services.RemoveAll<ISqlConnectionFactory>();
+            services.RemoveAll<IDbConnectionFactory>();
 
-            services.AddSingleton<ISqlConnectionFactory>(_ =>
+            services.AddSingleton<IDbConnectionFactory>(_ =>
                 new SqlConnectionFacotry(connectionString));
 
             services.Configure<RedisCacheOptions>(redisCacheOptions =>

@@ -17,9 +17,9 @@ internal sealed class SearchApartmentQueryHandler
         (int)BookingStatus.Completed
     };
 
-    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+    private readonly IDbConnectionFactory _sqlConnectionFactory;
 
-    public SearchApartmentQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
+    public SearchApartmentQueryHandler(IDbConnectionFactory sqlConnectionFactory)
     {
         _sqlConnectionFactory = sqlConnectionFactory;
     }

@@ -3,6 +3,7 @@
 		<PackageReference Include="Dapper" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+		<PackageReference Include="Scrutor" />
 		<PackageReference Include="Serilog" />
 	</ItemGroup>
 

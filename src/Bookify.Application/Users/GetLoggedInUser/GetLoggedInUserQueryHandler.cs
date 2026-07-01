@@ -10,11 +10,11 @@ namespace Bookify.Application.Users.GetLoggedInUser;
 internal sealed class GetLoggedInUserQueryHandler
     : IQueryHandler<GetLoggedInUserQuery, UserResponse>
 {
-    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+    private readonly IDbConnectionFactory _sqlConnectionFactory;
     private readonly IUserContext _userContext;
 
     public GetLoggedInUserQueryHandler(
-        ISqlConnectionFactory sqlConnectionFactory,
+        IDbConnectionFactory sqlConnectionFactory,
         IUserContext userContext)
     {
         _sqlConnectionFactory = sqlConnectionFactory;
