@@ -25,7 +25,7 @@ internal sealed class GetLoggedInUserQueryHandler
         GetLoggedInUserQuery request,
         CancellationToken cancellationToken)
     {
-        using IDbConnection connection = _sqlConnectionFactory.CreateConnection();
+        using IDbConnection connection = _sqlConnectionFactory.GetOpenConnection();
 
         const string sql = """
             SELECT

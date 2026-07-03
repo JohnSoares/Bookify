@@ -4,5 +4,5 @@ namespace Bookify.Application.Abstractions.Data;
 
 public interface IDbConnectionFactory
 {
-    IDbConnection CreateConnection();
+    IDbConnection GetOpenConnection();
 }

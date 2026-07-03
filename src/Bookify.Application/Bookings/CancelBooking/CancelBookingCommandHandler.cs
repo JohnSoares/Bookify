@@ -29,7 +29,7 @@ internal sealed class CancelBookingCommandHandler : ICommandHandler<CancelBookin
 
         if (booking is null)
         {
-            return Result.Failure(BookingErrors.NotFound);
+            return Result.Failure(BookingErrors.NotFound(request.BookingId));
         }
 
         Result result = booking.Cancel(_dateTimeProvider.UtcNow);

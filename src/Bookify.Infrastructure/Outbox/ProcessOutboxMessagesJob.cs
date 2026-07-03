@@ -43,7 +43,7 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     {
         _logger.LogInformation("Beginning to process outbox messages");
 
-        using IDbConnection connection = _sqlConnectionFactory.CreateConnection();
+        using IDbConnection connection = _sqlConnectionFactory.GetOpenConnection();
         using IDbTransaction transaction = connection.BeginTransaction();
 
         IReadOnlyList<OutboxMessageResponse> outboxMessages = await GetOutboxMessagesAsync(connection, transaction);
