@@ -1,6 +1,5 @@
-﻿namespace Bookify.Domain.Reviews;
+using Bookify.Domain.Abstractions;
 
-public interface IReviewRepository
-{
-    void Insert(Review review);
-}
+namespace Bookify.Domain.Reviews;
+
+public interface IReviewRepository : IRepository<Review>;

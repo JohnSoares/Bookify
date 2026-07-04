@@ -1,45 +1,33 @@
-﻿using Bookify.Application.Abstractions.Clock;
-using Bookify.Application.Abstractions.Messaging;
+﻿using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Bookings;
 
 namespace Bookify.Application.Bookings.RejectBooking;
 
-internal sealed class RejectBookingCommandCommandHandler : ICommandHandler<RejectBookingCommand>
-{
-    private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly IBookingRepository _bookingRepository;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public RejectBookingCommandCommandHandler(
+internal sealed class RejectBookingCommandCommandHandler(
         IDateTimeProvider dateTimeProvider,
         IBookingRepository bookingRepository,
-        IUnitOfWork unitOfWork)
-    {
-        _bookingRepository = bookingRepository;
-        _unitOfWork = unitOfWork;
-        _dateTimeProvider = dateTimeProvider;
-    }
-
+        IUnitOfWork unitOfWork) : ICommandHandler<RejectBookingCommand>
+{
     public async Task<Result> Handle(
         RejectBookingCommand request,
         CancellationToken cancellationToken)
     {
-        Booking? booking = await _bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
+        Booking? booking = await bookingRepository.GetByIdAsync(request.BookingId, cancellationToken);
 
         if (booking is null)
         {
-            return Result.Failure(BookingErrors.NotFound);
+            return Result.Failure(BookingErrors.NotFound(request.BookingId));
         }
 
-        Result result = booking.Reject(_dateTimeProvider.UtcNow);
+        Result result = booking.Reject(dateTimeProvider.UtcNow);
 
         if (result.IsFailure)
         {
             return result;
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }

@@ -7,25 +7,16 @@ using Dapper;
 
 namespace Bookify.Application.Users.GetLoggedInUser;
 
-internal sealed class GetLoggedInUserQueryHandler
-    : IQueryHandler<GetLoggedInUserQuery, UserResponse>
-{
-    private readonly IDbConnectionFactory _sqlConnectionFactory;
-    private readonly IUserContext _userContext;
-
-    public GetLoggedInUserQueryHandler(
+internal sealed class GetLoggedInUserQueryHandler(
         IDbConnectionFactory sqlConnectionFactory,
         IUserContext userContext)
-    {
-        _sqlConnectionFactory = sqlConnectionFactory;
-        _userContext = userContext;
-    }
-
+        : IQueryHandler<GetLoggedInUserQuery, UserResponse>
+{
     public async Task<Result<UserResponse>> Handle(
         GetLoggedInUserQuery request,
         CancellationToken cancellationToken)
     {
-        using IDbConnection connection = _sqlConnectionFactory.GetOpenConnection();
+        using IDbConnection connection = sqlConnectionFactory.GetOpenConnection();
 
         const string sql = """
             SELECT
@@ -41,7 +32,7 @@ internal sealed class GetLoggedInUserQueryHandler
             sql,
             new
             {
-                _userContext.IdentityId
+                userContext.IdentityId
             });
 
         return user;

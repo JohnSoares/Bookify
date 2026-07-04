@@ -1,5 +1,4 @@
-﻿using Bookify.Application.Abstractions.Clock;
-using Bookify.Application.Abstractions.Messaging;
+﻿using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Bookings;
 
@@ -27,7 +26,7 @@ internal sealed class CompleteBookingCommandHandler : ICommandHandler<CompleteBo
 
         if (booking is null)
         {
-            return Result.Failure(BookingErrors.NotFound);
+            return Result.Failure(BookingErrors.NotFound(request.BookingId));
         }
 
         Result result = booking.Complete(_dateTimeProvider.UtcNow);

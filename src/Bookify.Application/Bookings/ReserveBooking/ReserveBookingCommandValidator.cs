@@ -7,12 +7,12 @@ internal sealed class ReserveBookingCommandValidator : AbstractValidator<Reserve
     public ReserveBookingCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId is required.");
+            .NotEmpty().WithErrorCode(BookingErrorCodes.ReserveBooking.MissingUserId);
 
         RuleFor(x => x.ApartmentId)
-            .NotEmpty().WithMessage("ApartmentId is required.");
+            .NotEmpty().WithErrorCode(BookingErrorCodes.ReserveBooking.MissingApartmentId);
 
         RuleFor(x => x.StartDate)
-            .LessThan(x => x.EndDate).WithMessage("StartDate must be before EndDate.");
+            .LessThan(x => x.EndDate).WithErrorCode(BookingErrorCodes.ReserveBooking.InvalidDates);
     }
 }

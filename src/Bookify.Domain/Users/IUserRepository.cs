@@ -1,8 +1,5 @@
-﻿namespace Bookify.Domain.Users;
+using Bookify.Domain.Abstractions;
 
-public interface IUserRepository
-{
-    Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+namespace Bookify.Domain.Users;
 
-    void Insert(User user);
-}
+public interface IUserRepository : IRepository<User>;

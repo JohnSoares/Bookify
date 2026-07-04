@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Infrastructure.Repositories;
 
-internal abstract class Repository<T>
+internal abstract class Repository<T> : IRepository<T>
     where T : Entity
 {
     protected readonly ApplicationDbContext DbContext;
@@ -20,6 +20,17 @@ internal abstract class Repository<T>
         return await DbContext
             .Set<T>()
             .FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+    }
+
+    public async Task<T?> GetByIdReadOnlyAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return await DbContext
+            .Set<T>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                entity => entity.Id == id, cancellationToken);
     }
 
     public virtual void Insert(T entity)
