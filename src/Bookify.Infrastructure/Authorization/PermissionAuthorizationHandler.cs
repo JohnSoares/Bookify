@@ -4,15 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Bookify.Infrastructure.Authorization;
 
-internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+internal sealed class PermissionAuthorizationHandler(IServiceProvider serviceProvider) : AuthorizationHandler<PermissionRequirement>
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public PermissionAuthorizationHandler(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context, 
         PermissionRequirement requirement)
@@ -22,7 +15,7 @@ internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<Perm
             return;
         }
 
-        using IServiceScope scope = _serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
 
         AuthorizationService authorizationService = scope.ServiceProvider.GetRequiredService<AuthorizationService>();
 
