@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Caching;
-using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Email;
 using Bookify.Domain.Abstractions;
@@ -12,8 +11,8 @@ using Bookify.Domain.Users;
 using Bookify.Infrastructure.Authentication;
 using Bookify.Infrastructure.Authorization;
 using Bookify.Infrastructure.Caching;
-using Bookify.Infrastructure.Data;
 using Bookify.Infrastructure.Database;
+using Bookify.Infrastructure.DomainEvents;
 using Bookify.Infrastructure.Email;
 using Bookify.Infrastructure.Outbox;
 using Bookify.Infrastructure.Repositories;
@@ -31,6 +30,7 @@ using Quartz;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
 using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
 using IAuthenticationService = Bookify.Application.Abstractions.Authentication.IAuthenticationService;
+using IUnitOfWork = Bookify.Domain.Abstractions.IUnitOfWork;
 
 namespace Bookify.Infrastructure;
 
@@ -38,30 +38,31 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration) =>
+        services
+            .AddServices()
+            .AddPersistence(configuration)
+            .AddCaching(configuration)
+            .AddHealthChecks(configuration)
+            .AddBackgroundJobs(configuration)
+            .AddAuthentication(configuration)
+            .AddAuthorization()
+            .AddApiVersioning();
+
+    private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
         services.AddTransient<IEmailService, EmailService>();
 
-        AddPersistence(services, configuration);
-
-        AddCaching(services, configuration);
-
-        AddAuthentication(services, configuration);
-
-        AddAuthorization(services);
-
-        AddHealthChecks(services, configuration);
-
-        AddApiVersioning(services);
-
-        AddBackgroundJobs(services, configuration);
+        services.AddSingleton<IDomainEventsDispatcher, DomainEventsDispatcher>();
 
         return services;
     }
 
-    private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         string connectionString = configuration.GetConnectionString("Database") ??
             throw new ArgumentNullException(nameof(configuration));
@@ -83,9 +84,54 @@ public static class DependencyInjection
             new DbConnectionFacotry(new NpgsqlDataSourceBuilder(connectionString).Build()));
 
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+
+        return services;
     }
 
-    private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddCaching(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        string connectionString = configuration.GetConnectionString("Cache") ??
+                                  throw new ArgumentNullException(nameof(configuration));
+
+        services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
+
+        services.AddSingleton<ICacheService, CacheService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddHealthChecks(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddHealthChecks()
+            .AddNpgSql(configuration.GetConnectionString("Database")!)
+            .AddRedis(configuration.GetConnectionString("Cache")!)
+            .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundJobs(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<OutboxOptions>(configuration.GetSection("Outbox"));
+
+        services.AddQuartz();
+
+        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+
+        services.ConfigureOptions<ProcessOutboxMessagesJobSetup>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddAuthentication(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -117,9 +163,11 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
 
         services.AddScoped<IUserContext, UserContext>();
+
+        return services;
     }
 
-    private static void AddAuthorization(IServiceCollection services)
+    private static IServiceCollection AddAuthorization(this IServiceCollection services)
     {
         services.AddScoped<AuthorizationService>();
 
@@ -128,27 +176,11 @@ public static class DependencyInjection
         services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        return services;
     }
 
-    private static void AddCaching(IServiceCollection services, IConfiguration configuration)
-    {
-        string connectionString = configuration.GetConnectionString("Cache") ??
-                                  throw new ArgumentNullException(nameof(configuration));
-
-        services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
-
-        services.AddSingleton<ICacheService, CacheService>();
-    }
-
-    private static void AddHealthChecks(IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("Database")!)
-            .AddRedis(configuration.GetConnectionString("Cache")!)
-            .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
-    }
-
-    private static void AddApiVersioning(IServiceCollection services)
+    private static IServiceCollection AddApiVersioning(this IServiceCollection services)
     {
         services
             .AddApiVersioning(options =>
@@ -163,16 +195,7 @@ public static class DependencyInjection
                 options.GroupNameFormat = "'v'V";
                 options.SubstituteApiVersionInUrl = true;
             });
-    }
 
-    private static void AddBackgroundJobs(IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<OutboxOptions>(configuration.GetSection("Outbox"));
-
-        services.AddQuartz();
-
-        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
-
-        services.ConfigureOptions<ProcessOutboxMessagesJobSetup>();
+        return services;
     }
 }
