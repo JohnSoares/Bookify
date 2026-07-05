@@ -5,7 +5,7 @@ using Bookify.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Bookify.Infrastructure.Configurations;
+namespace Bookify.Infrastructure.Database.Configurations;
 
 internal sealed class ReviewConfiguration : IEntityTypeConfiguration<Review>
 {

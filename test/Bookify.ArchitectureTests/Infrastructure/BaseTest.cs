@@ -1,6 +1,6 @@
 ﻿using Bookify.Application.Abstractions.Messaging;
 using Bookify.Domain.Abstractions;
-using Bookify.Infrastructure;
+using Bookify.Infrastructure.Database;
 using System.Reflection;
 
 namespace Bookify.ArchitectureTests.Infrastructure;

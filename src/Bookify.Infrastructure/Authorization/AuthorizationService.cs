@@ -1,5 +1,6 @@
 ﻿using Bookify.Application.Abstractions.Caching;
 using Bookify.Domain.Users;
+using Bookify.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Infrastructure.Authorization;

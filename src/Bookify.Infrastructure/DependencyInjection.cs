@@ -13,6 +13,7 @@ using Bookify.Infrastructure.Authentication;
 using Bookify.Infrastructure.Authorization;
 using Bookify.Infrastructure.Caching;
 using Bookify.Infrastructure.Data;
+using Bookify.Infrastructure.Database;
 using Bookify.Infrastructure.Email;
 using Bookify.Infrastructure.Outbox;
 using Bookify.Infrastructure.Repositories;
@@ -25,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Quartz;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
 using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
@@ -78,7 +80,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddSingleton<IDbConnectionFactory>(_ =>
-            new SqlConnectionFacotry(connectionString));
+            new DbConnectionFacotry(new NpgsqlDataSourceBuilder(connectionString).Build()));
 
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
     }

@@ -1,34 +1,25 @@
-﻿using Bookify.Application.Abstractions.Clock;
-using Bookify.Application.Exceptions;
+﻿using Bookify.Application.Exceptions;
 using Bookify.Domain.Abstractions;
 using Bookify.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace Bookify.Infrastructure;
+namespace Bookify.Infrastructure.Database;
 
-public sealed class ApplicationDbContext : DbContext, IUnitOfWork
+public sealed class ApplicationDbContext(
+    DbContextOptions<ApplicationDbContext> options, 
+    IDateTimeProvider dateTimeProvider) : DbContext(options), IUnitOfWork
 {
     private static readonly JsonSerializerSettings jsonSerializerSettings = new()
     {
         TypeNameHandling = TypeNameHandling.All
     };
 
-    private readonly IDateTimeProvider _dateTimeProvider;
-
-    public ApplicationDbContext(
-        DbContextOptions options, 
-        IDateTimeProvider dateTimeProvider)
-        : base(options)
-    {
-        _dateTimeProvider = dateTimeProvider;
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.HasDefaultSchema(Schemas.Default);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -62,7 +53,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
             })
             .Select(domainEvent => new OutboxMessage(
                 Guid.NewGuid(),
-                _dateTimeProvider.UtcNow,
+                dateTimeProvider.UtcNow,
                 domainEvent.GetType().Name,
                 JsonConvert.SerializeObject(domainEvent, jsonSerializerSettings)))
             .ToList();

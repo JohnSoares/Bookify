@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Bookify.Infrastructure.Configurations;
+namespace Bookify.Infrastructure.Database.Configurations;
 
 internal sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 {

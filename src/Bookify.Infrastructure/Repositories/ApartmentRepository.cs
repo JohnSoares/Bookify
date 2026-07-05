@@ -1,4 +1,5 @@
 ﻿using Bookify.Domain.Apartments;
+using Bookify.Infrastructure.Database;
 
 namespace Bookify.Infrastructure.Repositories;
 
