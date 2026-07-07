@@ -2,7 +2,7 @@
 
 public sealed class OutboxOptions
 {
-    public int IntervalInSeconds { get; init; }
+    public int SchedulePollingInterval { get; init; } = 10;
 
-    public int BatchSize { get; init; }
+    public int BatchSize { get; init; } = 10;
 }

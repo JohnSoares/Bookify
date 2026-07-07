@@ -1,20 +1,14 @@
 ﻿using Bookify.Application.Exceptions;
 using Bookify.Domain.Abstractions;
-using Bookify.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 
 namespace Bookify.Infrastructure.Database;
 
-public sealed class ApplicationDbContext(
-    DbContextOptions<ApplicationDbContext> options, 
-    IDateTimeProvider dateTimeProvider) : DbContext(options), IUnitOfWork
+public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
+    : DbContext(options), IUnitOfWork
 {
-    private static readonly JsonSerializerSettings jsonSerializerSettings = new()
-    {
-        TypeNameHandling = TypeNameHandling.All
-    };
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -26,8 +20,6 @@ public sealed class ApplicationDbContext(
     {
         try
         {
-            AddDomainEventsAsOutboxMessages();
-
             int result = await base.SaveChangesAsync(cancellationToken);
 
             return result;
@@ -37,27 +29,9 @@ public sealed class ApplicationDbContext(
             throw new ConcurrencyException("A concurrency conflict occurred while saving changes to the database.", ex);
         }
     }
-
-    private void AddDomainEventsAsOutboxMessages()
+    
+    public async Task<IDbTransaction> BeginTransactionAsync()
     {
-        var outboxMessages = ChangeTracker
-            .Entries<Entity>()
-            .Select(entry => entry.Entity)
-            .SelectMany(entity =>
-            {
-                IReadOnlyList<IDomainEvent> domainEvents = entity.DomainEvents;
-
-                entity.ClearDomainEvents();
-
-                return domainEvents;
-            })
-            .Select(domainEvent => new OutboxMessage(
-                Guid.NewGuid(),
-                dateTimeProvider.UtcNow,
-                domainEvent.GetType().Name,
-                JsonConvert.SerializeObject(domainEvent, jsonSerializerSettings)))
-            .ToList();
-
-        AddRange(outboxMessages);
+        return (await Database.BeginTransactionAsync()).GetDbTransaction();
     }
 }

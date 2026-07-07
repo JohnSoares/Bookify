@@ -1,18 +1,15 @@
-﻿using System.Data;
-using Bookify.Application.Abstractions.Clock;
-using Bookify.Application.Abstractions.Data;
+﻿using Bookify.Application.Abstractions.Data;
 using Bookify.Domain.Abstractions;
+using Bookify.Infrastructure.DomainEvents;
 using Dapper;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Quartz;
+using System.Data;
 
 namespace Bookify.Infrastructure.Outbox;
 
-[DisallowConcurrentExecution]
-internal sealed class ProcessOutboxMessagesJob : IJob
+internal sealed class ProcessOutboxMessagesJob : IProcessOutboxMessagesJob
 {
     private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
@@ -20,26 +17,26 @@ internal sealed class ProcessOutboxMessagesJob : IJob
     };
 
     private readonly IDbConnectionFactory _sqlConnectionFactory;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventsDispatcher _domainEventsDispatcher;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly OutboxOptions _outboxOptions;
     private readonly ILogger<ProcessOutboxMessagesJob> _logger;
 
     public ProcessOutboxMessagesJob(
         IDbConnectionFactory sqlConnectionFactory,
-        IPublisher publisher,
+        IDomainEventsDispatcher domainEventsDispatcher,
         IDateTimeProvider dateTimeProvider,
         IOptions<OutboxOptions> outboxOptions,
         ILogger<ProcessOutboxMessagesJob> logger)
     {
         _sqlConnectionFactory = sqlConnectionFactory;
-        _publisher = publisher;
+        _domainEventsDispatcher = domainEventsDispatcher;
         _dateTimeProvider = dateTimeProvider;
         _logger = logger;
         _outboxOptions = outboxOptions.Value;
     }
 
-    public async Task Execute(IJobExecutionContext context)
+    public async Task ProcessAsync()
     {
         _logger.LogInformation("Beginning to process outbox messages");
 
@@ -54,11 +51,21 @@ internal sealed class ProcessOutboxMessagesJob : IJob
 
             try
             {
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Processing message {MessageId}.", outboxMessage.Id);
+                }
+
                 IDomainEvent domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(
                     outboxMessage.Content,
                     JsonSerializerSettings)!;
 
-                await _publisher.Publish(domainEvent, context.CancellationToken);
+                await _domainEventsDispatcher.DispatchAsync([domainEvent]);
+
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Completed processing message {MessageId}.", outboxMessage.Id);
+                }
             }
             catch (Exception caughtException)
             {
@@ -82,17 +89,18 @@ internal sealed class ProcessOutboxMessagesJob : IJob
         IDbConnection connection,
         IDbTransaction transaction)
     {
-        string sql = $"""
+        const string sql = """
                       SELECT id, content
                       FROM outbox_messages
                       WHERE processed_on_utc IS NULL
                       ORDER BY occurred_on_utc
-                      LIMIT {_outboxOptions.BatchSize}
-                      FOR UPDATE
+                      LIMIT @BatchSize
+                      FOR UPDATE SKIP LOCKED
                       """;
 
         IEnumerable<OutboxMessageResponse> outboxMessages = await connection.QueryAsync<OutboxMessageResponse>(
             sql,
+            new { _outboxOptions.BatchSize },
             transaction: transaction);
 
         return outboxMessages.ToList();

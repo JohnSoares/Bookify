@@ -3,6 +3,7 @@ using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Caching;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Application.Abstractions.Email;
+using Bookify.Application.Abstractions.Events;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Apartments;
 using Bookify.Domain.Bookings;
@@ -14,19 +15,26 @@ using Bookify.Infrastructure.Caching;
 using Bookify.Infrastructure.Database;
 using Bookify.Infrastructure.DomainEvents;
 using Bookify.Infrastructure.Email;
+using Bookify.Infrastructure.OpenTelemetry;
 using Bookify.Infrastructure.Outbox;
 using Bookify.Infrastructure.Repositories;
 using Bookify.Infrastructure.Time;
 using Dapper;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using Quartz;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using AuthenticationOptions = Bookify.Infrastructure.Authentication.AuthenticationOptions;
 using AuthenticationService = Bookify.Infrastructure.Authentication.AuthenticationService;
 using IAuthenticationService = Bookify.Application.Abstractions.Authentication.IAuthenticationService;
@@ -45,6 +53,7 @@ public static class DependencyInjection
             .AddCaching(configuration)
             .AddHealthChecks(configuration)
             .AddBackgroundJobs(configuration)
+            .AddTelemetry()
             .AddAuthentication(configuration)
             .AddAuthorization()
             .AddApiVersioning();
@@ -64,11 +73,24 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        string connectionString = configuration.GetConnectionString("Database") ??
-            throw new ArgumentNullException(nameof(configuration));
+        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
+        string connectionString = configuration.GetConnectionString("Database");
+        Ensure.NotNullOrEmpty(connectionString);
+
+        services.AddSingleton<IDbConnectionFactory>(_ =>
+            new DbConnectionFacotry(new NpgsqlDataSourceBuilder(connectionString).Build()));
+
+        services.TryAddSingleton<InsertOutboxMessagesInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>(
+            (sp, options) => options
+                .UseNpgsql(connectionString, npgsqlOptions =>
+                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default))
+                .UseSnakeCaseNamingConvention()
+                .AddInterceptors(sp.GetRequiredService<InsertOutboxMessagesInterceptor>()));
+
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<IUserRepository, UserRepository>();
 
@@ -78,13 +100,6 @@ public static class DependencyInjection
 
         services.AddScoped<IReviewRepository, ReviewRepository>();
 
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
-        services.AddSingleton<IDbConnectionFactory>(_ =>
-            new DbConnectionFacotry(new NpgsqlDataSourceBuilder(connectionString).Build()));
-
-        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
-
         return services;
     }
 
@@ -92,8 +107,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        string connectionString = configuration.GetConnectionString("Cache") ??
-                                  throw new ArgumentNullException(nameof(configuration));
+        string connectionString = configuration.GetConnectionString("Cache");
+        Ensure.NotNullOrEmpty(connectionString);
 
         services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
 
@@ -120,11 +135,43 @@ public static class DependencyInjection
     {
         services.Configure<OutboxOptions>(configuration.GetSection("Outbox"));
 
-        services.AddQuartz();
+        services.AddHangfire(config =>
+            config.UsePostgreSqlStorage(
+                options => options.UseNpgsqlConnection(configuration.GetConnectionString("Database")!)));
 
-        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+        services.AddHangfireServer((serviceProvider, options) =>
+        {
+            OutboxOptions outboxOptions = serviceProvider.GetRequiredService<IOptions<OutboxOptions>>().Value;
 
-        services.ConfigureOptions<ProcessOutboxMessagesJobSetup>();
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(outboxOptions.SchedulePollingInterval);
+        });
+
+        services.AddScoped<IProcessOutboxMessagesJob, ProcessOutboxMessagesJob>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddTelemetry(this IServiceCollection services)
+    {
+        services
+            .AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ServiceName))
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                metrics.AddOtlpExporter();
+            })
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation();
+
+                tracing.AddOtlpExporter();
+            });
 
         return services;
     }
