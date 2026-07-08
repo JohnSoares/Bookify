@@ -1,64 +1,83 @@
-using Asp.Versioning.ApiExplorer;
+using Asp.Versioning;
+using Asp.Versioning.Builder;
 using Bookify.Api.Extensions;
-using Bookify.Api.OpenApi;
 using Bookify.Application;
 using Bookify.Infrastructure;
+using Bookify.Infrastructure.OpenTelemetry;
+using Hangfire;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
+using System.Reflection;
+using Web.Api.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, loggerConfig) =>
-    loggerConfig.ReadFrom.Configuration(context.Configuration));
+    loggerConfig
+        .ReadFrom.Configuration(context.Configuration)
+        .WriteTo.OpenTelemetry(o =>
+        {
+            o.Endpoint = context.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]!;
+            o.ResourceAttributes = new Dictionary<string, object>
+            {
+                { "service.name", DiagnosticsConfig.ServiceName }
+            };
+        }));
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services
+    .AddApplication()
+    .AddPresentation()
+    .AddInfrastructure(builder.Configuration);
 
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-
-builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
+builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 
 WebApplication app = builder.Build();
 
+ApiVersionSet apiVersionSet = app.NewApiVersionSet()
+    .HasApiVersion(new ApiVersion(1))
+    .ReportApiVersions()
+    .Build();
+
+RouteGroupBuilder versionedGroup = app
+    .MapGroup("api/v{version:apiVersion}")
+    .WithApiVersionSet(apiVersionSet);
+
+app.MapEndpoints(versionedGroup);
+
+app.UseBackgroundJobs();
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    app.UseSwaggerWithUi();
+
+    app.UseHangfireDashboard(options: new DashboardOptions
     {
-        foreach (ApiVersionDescription description in app.DescribeApiVersions())
-        {
-            string url = $"/swagger/{description.GroupName}/swagger.json";
-            string name = description.GroupName.ToUpperInvariant();
-            options.SwaggerEndpoint(url, name);
-        }
+        Authorization = [],
+        DarkModeEnabled = false
     });
 
     app.ApplyMigrations();
 
     // REMARK: Uncomment if you want to seed initial data.
-    app.SeedData();
+    //app.SeedData();
 }
 
 app.UseHttpsRedirection();
-
-app.UseRequestContextLogging();
-
-app.UseSerilogRequestLogging();
-
-app.UseCustomExceptionHandler();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.MapHealthChecks("health", new HealthCheckOptions
 {
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
+
+app.UseRequestContextLogging();
+
+app.UseSerilogRequestLogging();
+
+app.UseExceptionHandler();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 await app.RunAsync();

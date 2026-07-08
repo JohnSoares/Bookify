@@ -12,6 +12,8 @@ EXPOSE 5001
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Packages.props", "."]
+COPY ["Directory.Build.props", "."]
 COPY ["src/Bookify.Api/Bookify.Api.csproj", "src/Bookify.Api/"]
 COPY ["src/Bookify.Application/Bookify.Application.csproj", "src/Bookify.Application/"]
 COPY ["src/Bookify.Domain/Bookify.Domain.csproj", "src/Bookify.Domain/"]

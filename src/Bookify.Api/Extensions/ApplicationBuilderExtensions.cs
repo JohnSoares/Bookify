@@ -1,28 +1,24 @@
-﻿using Bookify.Api.Middleware;
-using Bookify.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
+﻿using Asp.Versioning.ApiExplorer;
 
 namespace Bookify.Api.Extensions;
 
 internal static class ApplicationBuilderExtensions
 {
-    public static void ApplyMigrations(this IApplicationBuilder app)
+    public static IApplicationBuilder UseSwaggerWithUi(this WebApplication app)
     {
-        using IServiceScope scope = app.ApplicationServices.CreateScope();
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            IReadOnlyList<ApiVersionDescription> descriptions = app.DescribeApiVersions();
 
-        using ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            foreach (ApiVersionDescription description in descriptions)
+            {
+                string url = $"/swagger/{description.GroupName}/swagger.json";
+                string name = description.GroupName.ToUpperInvariant();
 
-        dbContext.Database.Migrate();
-    }
-
-    public static void UseCustomExceptionHandler(this IApplicationBuilder app)
-    {
-        app.UseMiddleware<ExceptionHandlingMiddleware>();
-    }
-
-    public static IApplicationBuilder UseRequestContextLogging(this IApplicationBuilder app)
-    {
-        app.UseMiddleware<RequestContextLoggingMiddleware>();
+                options.SwaggerEndpoint(url, name);
+            }
+        });
 
         return app;
     }

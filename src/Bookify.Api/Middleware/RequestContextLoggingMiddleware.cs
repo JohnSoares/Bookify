@@ -17,11 +17,10 @@ internal sealed class RequestContextLoggingMiddleware(RequestDelegate next)
 
     private static string GetCorrelationId(HttpContext context)
     {
-        if (context.Request.Headers.TryGetValue(CorrelationIdHeaderName, out StringValues correlationId))
-        {
-            return correlationId;
-        }
+        context.Request.Headers.TryGetValue(
+            CorrelationIdHeaderName,
+            out StringValues correlationId);
 
-        return context.TraceIdentifier;
+        return correlationId.FirstOrDefault() ?? context.TraceIdentifier;
     }
 }
