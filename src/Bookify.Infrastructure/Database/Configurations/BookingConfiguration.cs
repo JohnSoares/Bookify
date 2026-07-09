@@ -11,9 +11,16 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
-        builder.ToTable("bookings");
+        builder.ToTable("bookings", tableBuilder =>
+            tableBuilder.HasCheckConstraint(
+                "ck_bookings_status_valid",
+                $"status IN ({GetAllowedBookingStatuses()})"));
 
         builder.HasKey(booking => booking.Id);
+
+        builder.Property(booking => booking.Status)
+            .HasColumnType("text")
+            .HasConversion<string>();
 
         builder.OwnsOne(booking => booking.PriceForPeriod, priceBuilder => priceBuilder.Property(money => money.Currency)
                 .HasConversion(currency => currency.Code, code => Currency.FromCode(code)));
@@ -37,4 +44,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .WithMany()
             .HasForeignKey(booking => booking.UserId);
     }
+
+    private static string GetAllowedBookingStatuses() =>
+        string.Join(", ", Enum.GetNames<BookingStatus>().Select(status => $"'{status}'"));
 }

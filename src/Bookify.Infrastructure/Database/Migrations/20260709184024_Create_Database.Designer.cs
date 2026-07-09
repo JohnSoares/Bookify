@@ -12,15 +12,16 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Bookify.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260617180242_Add_Reviews")]
-    partial class Add_Reviews
+    [Migration("20260709184024_Create_Database")]
+    partial class Create_Database
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasDefaultSchema("public")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -32,9 +33,9 @@ namespace Bookify.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.PrimitiveCollection<int[]>("Amenities")
+                    b.Property<string[]>("Amenities")
                         .IsRequired()
-                        .HasColumnType("integer[]")
+                        .HasColumnType("text[]")
                         .HasColumnName("amenities");
 
                     b.Property<string>("Description")
@@ -62,7 +63,10 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_apartments");
 
-                    b.ToTable("apartments", (string)null);
+                    b.ToTable("apartments", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_apartments_amenities_valid", "amenities <@ ARRAY['Wifi', 'AirConditioning', 'Parking', 'PetFriendly', 'SwimmingPool', 'Gym', 'Spa', 'Terrace', 'MountainView', 'GardenView']::text[]");
+                        });
                 });
 
             modelBuilder.Entity("Bookify.Domain.Bookings.Booking", b =>
@@ -96,8 +100,9 @@ namespace Bookify.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("rejected_on_utc");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("status");
 
                     b.Property<Guid>("UserId")
@@ -113,7 +118,10 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_bookings_user_id");
 
-                    b.ToTable("bookings", (string)null);
+                    b.ToTable("bookings", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_bookings_status_valid", "status IN ('Reserved', 'Confirmed', 'Rejected', 'Cancelled', 'Completed')");
+                        });
                 });
 
             modelBuilder.Entity("Bookify.Domain.Reviews.Review", b =>
@@ -161,7 +169,7 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_reviews_user_id");
 
-                    b.ToTable("reviews", (string)null);
+                    b.ToTable("reviews", "public");
                 });
 
             modelBuilder.Entity("Bookify.Domain.Users.Permission", b =>
@@ -181,7 +189,7 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_permissions");
 
-                    b.ToTable("permissions", (string)null);
+                    b.ToTable("permissions", "public");
 
                     b.HasData(
                         new
@@ -208,7 +216,7 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_roles");
 
-                    b.ToTable("roles", (string)null);
+                    b.ToTable("roles", "public");
 
                     b.HasData(
                         new
@@ -234,7 +242,7 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasIndex("PermissionId")
                         .HasDatabaseName("ix_role_permissions_permission_id");
 
-                    b.ToTable("role_permissions", (string)null);
+                    b.ToTable("role_permissions", "public");
 
                     b.HasData(
                         new
@@ -285,7 +293,42 @@ namespace Bookify.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_users_identity_id");
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users", "public");
+                });
+
+            modelBuilder.Entity("Bookify.Infrastructure.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("content");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<DateTime>("OccurredOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on_utc");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_on_utc");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.ToTable("outbox_messages", "public");
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -304,7 +347,7 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasIndex("UsersId")
                         .HasDatabaseName("ix_role_user_users_id");
 
-                    b.ToTable("role_user", (string)null);
+                    b.ToTable("role_user", "public");
                 });
 
             modelBuilder.Entity("Bookify.Domain.Apartments.Apartment", b =>
@@ -342,7 +385,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("ApartmentId");
 
-                            b1.ToTable("apartments");
+                            b1.ToTable("apartments", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApartmentId")
@@ -366,7 +409,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("ApartmentId");
 
-                            b1.ToTable("apartments");
+                            b1.ToTable("apartments", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApartmentId")
@@ -390,7 +433,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("ApartmentId");
 
-                            b1.ToTable("apartments");
+                            b1.ToTable("apartments", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApartmentId")
@@ -440,7 +483,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.ToTable("bookings");
+                            b1.ToTable("bookings", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId")
@@ -464,7 +507,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.ToTable("bookings");
+                            b1.ToTable("bookings", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId")
@@ -488,7 +531,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.ToTable("bookings");
+                            b1.ToTable("bookings", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId")
@@ -512,7 +555,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.ToTable("bookings");
+                            b1.ToTable("bookings", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId")
@@ -535,7 +578,7 @@ namespace Bookify.Infrastructure.Migrations
 
                             b1.HasKey("BookingId");
 
-                            b1.ToTable("bookings");
+                            b1.ToTable("bookings", "public");
 
                             b1.WithOwner()
                                 .HasForeignKey("BookingId")

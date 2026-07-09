@@ -30,9 +30,9 @@ namespace Bookify.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.PrimitiveCollection<int[]>("Amenities")
+                    b.Property<string[]>("Amenities")
                         .IsRequired()
-                        .HasColumnType("integer[]")
+                        .HasColumnType("text[]")
                         .HasColumnName("amenities");
 
                     b.Property<string>("Description")
@@ -60,7 +60,10 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_apartments");
 
-                    b.ToTable("apartments", "public");
+                    b.ToTable("apartments", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_apartments_amenities_valid", "amenities <@ ARRAY['Wifi', 'AirConditioning', 'Parking', 'PetFriendly', 'SwimmingPool', 'Gym', 'Spa', 'Terrace', 'MountainView', 'GardenView']::text[]");
+                        });
                 });
 
             modelBuilder.Entity("Bookify.Domain.Bookings.Booking", b =>
@@ -94,8 +97,9 @@ namespace Bookify.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("rejected_on_utc");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("status");
 
                     b.Property<Guid>("UserId")
@@ -111,7 +115,10 @@ namespace Bookify.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_bookings_user_id");
 
-                    b.ToTable("bookings", "public");
+                    b.ToTable("bookings", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_bookings_status_valid", "status IN ('Reserved', 'Confirmed', 'Rejected', 'Cancelled', 'Completed')");
+                        });
                 });
 
             modelBuilder.Entity("Bookify.Domain.Reviews.Review", b =>
