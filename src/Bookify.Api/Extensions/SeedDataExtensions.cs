@@ -34,8 +34,8 @@ internal static class SeedDataExtensions
                 PriceCurrency = "USD",
                 CleaningFeeAmount = faker.Random.Decimal(25, 200),
                 CleaningFeeCurrency = "USD",
-                Amenities = new List<int> { (int)Amenity.Parking, (int)Amenity.MountainView },
-                LastBookedOn = DateTime.MinValue
+                Amenities = new[] { (int)Amenity.Parking, (int)Amenity.MountainView },
+                LastBookedOn = (DateTime?)null
             });
         }
 

@@ -22,7 +22,7 @@ public class ConfirmBookingTests : BaseIntegrationTest
         var command = new ConfirmBookingCommand(BookingId);
 
         // Act
-        Result result = await Sender.Send(command);
+        Result result = await HandleCommand(command);
 
         // Assert
         result.Error.Should().Be(BookingErrors.NotFound(BookingId));

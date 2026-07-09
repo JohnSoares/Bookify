@@ -9,7 +9,8 @@ internal static class DependencyInjection
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+            options.CustomSchemaIds(type => type.FullName?.Replace("+", ".")));
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

@@ -8,7 +8,7 @@ public static class UserErrors
         "User.NotFound",
         $"The user with the Id = '{id}' was not found.");
 
-    public static readonly Error InvalidCredentials = Error.Failure(
+    public static readonly Error InvalidCredentials = Error.Unauthorized(
         "User.InvalidCredentials",
         "The provided credentials were invalid.");
 }

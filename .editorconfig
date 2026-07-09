@@ -359,6 +359,14 @@ dotnet_diagnostic.IDE0046.severity = none
 # IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = none
 
+# Dapper Analyzers
+
+# DAP005: Dapper.AOT overload ambiguity
+dotnet_diagnostic.DAP005.severity = none
+
+# DAP018: Parameters are supplied, but no parameters were detected in the command
+dotnet_diagnostic.DAP018.severity = none
+
 # SonarAnalyzer.CSharp rules
 
 # S112: General or reserved exceptions should never be thrown

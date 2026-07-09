@@ -7,7 +7,7 @@ using Web.Api.Infrastructure;
 
 namespace Bookify.Api.Endpoints.Users;
 
-internal class GetLoggedInUser : IEndpoint
+internal sealed class GetLoggedInUser : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {

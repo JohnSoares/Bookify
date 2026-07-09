@@ -45,7 +45,10 @@ RouteGroupBuilder versionedGroup = app
 
 app.MapEndpoints(versionedGroup);
 
-app.UseBackgroundJobs();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseBackgroundJobs();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -61,6 +64,12 @@ if (app.Environment.IsDevelopment())
 
     // REMARK: Uncomment if you want to seed initial data.
     //app.SeedData();
+}
+
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.ApplyMigrations();
+    app.SeedData();
 }
 
 app.UseHttpsRedirection();

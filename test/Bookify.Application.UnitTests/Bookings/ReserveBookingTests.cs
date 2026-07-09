@@ -1,4 +1,3 @@
-﻿using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Bookings.ReserveBooking;
 using Bookify.Application.Exceptions;
 using Bookify.Application.UnitTests.Apartments;
@@ -89,10 +88,10 @@ public class ReserveBookingTests
         User user = UserData.Create();
         Apartment apartment = ApartmentData.Create();
         var command = new ReserveBookingCommand(
-            Command.UserId,
-            Command.ApartmentId,
-            Command.StartDate,
-            Command.StartDate);
+            ApartmentId: Command.ApartmentId,
+            UserId: Command.UserId,
+            StartDate: Command.StartDate,
+            EndDate: Command.StartDate);
 
         _userRepositoryMock
             .GetByIdAsync(command.UserId, Arg.Any<CancellationToken>())

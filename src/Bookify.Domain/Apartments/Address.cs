@@ -4,6 +4,10 @@ namespace Bookify.Domain.Apartments;
 
 public sealed record Address
 {
+    private Address()
+    {
+    }
+
     private Address(
         string country,
         string state,
@@ -18,15 +22,15 @@ public sealed record Address
         Street = street;
     }
 
-    public string Country { get; }
+    public string Country { get; private set; } = null!;
 
-    public string State { get; }
+    public string State { get; private set; } = null!;
 
-    public string ZipCode { get; }
+    public string ZipCode { get; private set; } = null!;
 
-    public string City { get; }
+    public string City { get; private set; } = null!;
 
-    public string Street { get; }
+    public string Street { get; private set; } = null!;
 
     public static Result<Address> Create(
         string? country,

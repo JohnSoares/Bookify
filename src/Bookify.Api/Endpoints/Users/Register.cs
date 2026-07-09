@@ -6,7 +6,7 @@ using Web.Api.Infrastructure;
 
 namespace Bookify.Api.Endpoints.Users;
 
-internal class Register : IEndpoint
+internal sealed class Register : IEndpoint
 {
     internal sealed record Request(string Email, string FirstName, string LastName, string Password);
 

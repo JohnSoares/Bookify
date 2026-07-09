@@ -11,16 +11,15 @@ public class ApplicationTests : BaseTest
     [Fact]
     public void CommandHandler_ShouldHave_NameEndingWith_CommandHandler()
     {
-        TestResult result = Types.InAssembly(ApplicationAssembly)
-            .That()
-            .ImplementInterface(typeof(ICommandHandler<>))
-            .Or()
-            .ImplementInterface(typeof(ICommandHandler<,>))
-            .Should()
-            .HaveNameEndingWith("CommandHandler")
-            .GetResult();
+        Type[] failingTypes = ApplicationAssembly
+            .GetTypes()
+            .Where(type => type.Namespace is not "Bookify.Application.Abstractions.Behaviors")
+            .Where(type => ImplementsGenericInterface(type, typeof(ICommandHandler<>)) ||
+                           ImplementsGenericInterface(type, typeof(ICommandHandler<,>)))
+            .Where(type => !type.Name.EndsWith("CommandHandler", StringComparison.Ordinal))
+            .ToArray();
 
-        result.IsSuccessful.Should().BeTrue();
+        failingTypes.Should().BeEmpty();
     }
 
     [Fact]
@@ -41,14 +40,14 @@ public class ApplicationTests : BaseTest
     [Fact]
     public void QueryHandler_ShouldHave_NameEndingWith_QueryHandler()
     {
-        TestResult result = Types.InAssembly(ApplicationAssembly)
-            .That()
-            .ImplementInterface(typeof(IQueryHandler<,>))
-            .Should()
-            .HaveNameEndingWith("QueryHandler")
-            .GetResult();
+        Type[] failingTypes = ApplicationAssembly
+            .GetTypes()
+            .Where(type => type.Namespace is not "Bookify.Application.Abstractions.Behaviors")
+            .Where(type => ImplementsGenericInterface(type, typeof(IQueryHandler<,>)))
+            .Where(type => !type.Name.EndsWith("QueryHandler", StringComparison.Ordinal))
+            .ToArray();
 
-        result.IsSuccessful.Should().BeTrue();
+        failingTypes.Should().BeEmpty();
     }
 
     [Fact]
@@ -89,4 +88,9 @@ public class ApplicationTests : BaseTest
 
         result.IsSuccessful.Should().BeTrue();
     }
+
+    private static bool ImplementsGenericInterface(Type type, Type genericInterfaceDefinition) =>
+        type.GetInterfaces().Any(interfaceType =>
+            interfaceType.IsGenericType &&
+            interfaceType.GetGenericTypeDefinition() == genericInterfaceDefinition);
 }

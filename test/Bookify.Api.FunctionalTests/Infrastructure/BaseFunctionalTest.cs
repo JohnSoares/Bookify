@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Json;
-using Bookify.Api.Controllers.Users;
+using System.Net.Http.Json;
 using Bookify.Api.FunctionalTests.Users;
 using Bookify.Application.Users.LogInUser;
 

@@ -22,7 +22,7 @@ public class GetBookingTests : BaseIntegrationTest
         var query = new GetBookingQuery(BookingId);
 
         // Act
-        Result<BookingResponse> result = await Sender.Send(query);
+        Result<BookingResponse> result = await HandleQuery<GetBookingQuery, BookingResponse>(query);
 
         // Assert
         result.Error.Should().Be(BookingErrors.NotFound(BookingId));
