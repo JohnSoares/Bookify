@@ -1,4 +1,4 @@
-﻿using Bookify.Application.Bookings.ConfirmBooking;
+using Bookify.Application.Bookings.RejectBooking;
 using Bookify.Application.IntegrationTests.Infrastructure;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Bookings;
@@ -6,20 +6,20 @@ using FluentAssertions;
 
 namespace Bookify.Application.IntegrationTests.Bookings;
 
-public class ConfirmBookingTests : BaseIntegrationTest
+public class RejectBookingTests : BaseIntegrationTest
 {
     private static readonly Guid BookingId = Guid.NewGuid();
 
-    public ConfirmBookingTests(IntegrationTestWebAppFactory factory)
+    public RejectBookingTests(IntegrationTestWebAppFactory factory)
         : base(factory)
     {
     }
 
     [Fact]
-    public async Task ConfirmBooking_ShouldReturnFailure_WhenBookingIsNotFound()
+    public async Task RejectBooking_ShouldReturnFailure_WhenBookingIsNotFound()
     {
         // Arrange
-        var command = new ConfirmBookingCommand(BookingId);
+        var command = new RejectBookingCommand(BookingId);
 
         // Act
         Result result = await HandleCommand(command);
@@ -29,13 +29,13 @@ public class ConfirmBookingTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task ConfirmBooking_ShouldReturnSuccess_WhenBookingIsReserved()
+    public async Task RejectBooking_ShouldReturnSuccess_WhenBookingIsReserved()
     {
         // Arrange
         DateOnly startDate = GetNextStartDate();
         Guid bookingId = await ReserveBookingAsync(startDate, startDate.AddDays(2));
 
-        var command = new ConfirmBookingCommand(bookingId);
+        var command = new RejectBookingCommand(bookingId);
 
         // Act
         Result result = await HandleCommand(command);

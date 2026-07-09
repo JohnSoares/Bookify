@@ -27,4 +27,24 @@ public class GetBookingTests : BaseIntegrationTest
         // Assert
         result.Error.Should().Be(BookingErrors.NotFound(BookingId));
     }
+
+    [Fact]
+    public async Task GetBooking_ShouldReturnBooking_WhenBookingExistsForLoggedInUser()
+    {
+        // Arrange
+        DateOnly startDate = GetNextStartDate();
+        DateOnly endDate = startDate.AddDays(2);
+        Guid bookingId = await ReserveBookingAsync(startDate, endDate);
+
+        var query = new GetBookingQuery(bookingId);
+
+        // Act
+        Result<BookingResponse> result = await HandleQuery<GetBookingQuery, BookingResponse>(query);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Id.Should().Be(bookingId);
+        result.Value.DurationStart.Should().Be(startDate);
+        result.Value.DurationEnd.Should().Be(endDate);
+    }
 }

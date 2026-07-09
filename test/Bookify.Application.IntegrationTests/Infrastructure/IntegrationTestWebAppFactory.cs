@@ -1,3 +1,4 @@
+using Bookify.Application.Abstractions.Authentication;
 using Bookify.Application.Abstractions.Data;
 using Bookify.Infrastructure.Authentication;
 using Bookify.Infrastructure.Database;
@@ -37,7 +38,7 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-        
+
         builder.ConfigureAppConfiguration(configurationBuilder =>
             configurationBuilder
                 .AddJsonFile("appsettings.Testing.json", optional: false, reloadOnChange: false));
@@ -70,6 +71,10 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
                 o.AdminUrl = $"{keycloakAddress}admin/realms/bookify/";
                 o.TokenUrl = $"{keycloakAddress}realms/bookify/protocol/openid-connect/token";
             });
+
+            services.RemoveAll<IUserContext>();
+            services.AddSingleton<TestUserContext>();
+            services.AddSingleton<IUserContext>(sp => sp.GetRequiredService<TestUserContext>());
         });
     }
 
