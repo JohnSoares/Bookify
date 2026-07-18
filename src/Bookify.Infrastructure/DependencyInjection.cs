@@ -159,16 +159,19 @@ public static class DependencyInjection
             .WithMetrics(metrics =>
             {
                 metrics
+                    .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddNpgsqlInstrumentation();
 
                 metrics.AddOtlpExporter();
             })
             .WithTracing(tracing =>
             {
                 tracing
+                    .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddNpgsql();
 
                 tracing.AddOtlpExporter();
             });
