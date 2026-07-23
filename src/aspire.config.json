@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "Bookify.AppHost/Bookify.AppHost.csproj"
+  }
+}

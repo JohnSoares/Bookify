@@ -353,6 +353,9 @@ dotnet_diagnostic.CS8618.severity = none
 
 # IDE Code Analyzers rules
 
+# IDE0008: Use explicit type instead of 'var'
+dotnet_diagnostic.IDE0008.severity = none
+
 # IDE0046: Convert to conditional expression
 dotnet_diagnostic.IDE0046.severity = none
 

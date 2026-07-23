@@ -51,9 +51,7 @@ public static class DependencyInjection
             .AddServices()
             .AddPersistence(configuration)
             .AddCaching(configuration)
-            .AddHealthChecks(configuration)
             .AddBackgroundJobs(configuration)
-            .AddTelemetry()
             .AddAuthentication(configuration)
             .AddAuthorization()
             .AddApiVersioning();
@@ -75,7 +73,7 @@ public static class DependencyInjection
     {
         SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
-        string connectionString = configuration.GetConnectionString("Database");
+        string connectionString = configuration.GetConnectionString("bookify");
         Ensure.NotNullOrEmpty(connectionString);
 
         services.AddSingleton<IDbConnectionFactory>(_ =>
@@ -107,24 +105,12 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        string connectionString = configuration.GetConnectionString("Cache");
+        string connectionString = configuration.GetConnectionString("bookify-redis");
         Ensure.NotNullOrEmpty(connectionString);
 
         services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
 
         services.AddSingleton<ICacheService, CacheService>();
-
-        return services;
-    }
-
-    private static IServiceCollection AddHealthChecks(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("Database")!)
-            .AddRedis(configuration.GetConnectionString("Cache")!)
-            .AddUrlGroup(new Uri(configuration["KeyCloak:BaseUrl"]!), HttpMethod.Get, "keycloak");
 
         return services;
     }
@@ -137,7 +123,7 @@ public static class DependencyInjection
 
         services.AddHangfire(config =>
             config.UsePostgreSqlStorage(
-                options => options.UseNpgsqlConnection(configuration.GetConnectionString("Database")!)));
+                options => options.UseNpgsqlConnection(configuration.GetConnectionString("bookify")!)));
 
         services.AddHangfireServer((serviceProvider, options) =>
         {
@@ -151,41 +137,13 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddTelemetry(this IServiceCollection services)
-    {
-        services
-            .AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ServiceName))
-            .WithMetrics(metrics =>
-            {
-                metrics
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddNpgsqlInstrumentation();
-
-                metrics.AddOtlpExporter();
-            })
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .AddHttpClientInstrumentation()
-                    .AddAspNetCoreInstrumentation()
-                    .AddEntityFrameworkCoreInstrumentation()
-                    .AddNpgsql();
-
-                tracing.AddOtlpExporter();
-            });
-
-        return services;
-    }
-
     private static IServiceCollection AddAuthentication(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer();
+            .AddKeycloakJwtBearer("bookify-keycloak", realm: "bookify");
 
         services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
 
@@ -202,6 +160,13 @@ public static class DependencyInjection
             httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
         })
         .AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
+
+        services.AddHttpClient<KeycloakAdminAuthService>((serviceProvider, httpClient) =>
+        {
+            KeycloakOptions keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
+
+            httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
+        });
 
         services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
         {

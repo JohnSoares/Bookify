@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/aspire/">
+    <Project Path="src/Bookify.AppHost/Bookify.AppHost.csproj" Id="8ee1de3a-7696-4544-bdc0-dfec12ea3404" />
+    <Project Path="src/Bookify.ServiceDefaults/Bookify.ServiceDefaults.csproj" />
+  </Folder>
   <Folder Name="/Solution items/">
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />

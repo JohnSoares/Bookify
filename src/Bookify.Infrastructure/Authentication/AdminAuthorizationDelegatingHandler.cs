@@ -8,18 +8,19 @@ namespace Bookify.Infrastructure.Authentication;
 
 internal sealed class AdminAuthorizationDelegatingHandler : DelegatingHandler
 {
-    private readonly KeycloakOptions _keycloakOptions;
+    private readonly KeycloakAdminAuthService _keycloakAdminAuthService;
 
-    public AdminAuthorizationDelegatingHandler(IOptions<KeycloakOptions> keycloakOptions)
+    public AdminAuthorizationDelegatingHandler(KeycloakAdminAuthService keycloakAdminAuthService)
     {
-        _keycloakOptions = keycloakOptions.Value;
+        _keycloakAdminAuthService = keycloakAdminAuthService;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        AuthorizationToken authorizationToken = await GetAuthorizationToken(cancellationToken);
+        AuthorizationToken authorizationToken = await _keycloakAdminAuthService.GetAuthorizationToken(
+            cancellationToken);
 
         request.Headers.Authorization = new AuthenticationHeaderValue(
             JwtBearerDefaults.AuthenticationScheme,
@@ -30,32 +31,5 @@ internal sealed class AdminAuthorizationDelegatingHandler : DelegatingHandler
         httpResponseMessage.EnsureSuccessStatusCode();
 
         return httpResponseMessage;
-    }
-
-    private async Task<AuthorizationToken> GetAuthorizationToken(CancellationToken cancellationToken)
-    {
-        var authorizationRequestParameters = new KeyValuePair<string, string>[]
-        {
-            new("client_id", _keycloakOptions.AdminClientId),
-            new("client_secret", _keycloakOptions.AdminClientSecret),
-            new("scope", "openid email"),
-            new("grant_type", "client_credentials")
-        };
-
-        var authorizationRequestContent = new FormUrlEncodedContent(authorizationRequestParameters);
-
-        using var authorizationRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            new Uri(_keycloakOptions.TokenUrl))
-        {
-            Content = authorizationRequestContent
-        };
-
-        HttpResponseMessage authorizationResponse = await base.SendAsync(authorizationRequest, cancellationToken);
-
-        authorizationResponse.EnsureSuccessStatusCode();
-
-        return await authorizationResponse.Content.ReadFromJsonAsync<AuthorizationToken>(cancellationToken) ??
-               throw new ApplicationException();
     }
 }
