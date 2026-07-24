@@ -5,11 +5,14 @@ var builder = DistributedApplication.CreateBuilder(args);
 var postgres = builder.AddPostgres("bookify-db")
                       .WithHostPort(5432)
                       .WithDataVolume()
+                      .WithPgAdmin()
                       .WithLifetime(ContainerLifetime.Persistent);
 
 var bookifyDb = postgres.AddDatabase("bookify");
 
-var redis = builder.AddRedis("bookify-redis");
+var redis = builder.AddRedis("bookify-redis").WithRedisInsight();
+
+builder.AddDockerComposeEnvironment("env");
 
 var api = builder.AddProject<Bookify_Api>("bookify-api")
                  .WithExternalHttpEndpoints()

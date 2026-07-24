@@ -1,0 +1,78 @@
+services:
+  env-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    ports:
+      - "18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  bookify-db:
+    image: "docker.io/library/postgres:18.3"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "${BOOKIFY_DB_PASSWORD}"
+    expose:
+      - "5432"
+    volumes:
+      - type: "volume"
+        target: "/var/lib/postgresql"
+        source: "bookify.apphost-859b4fcc47-bookify-db-data"
+        read_only: false
+    networks:
+      - "aspire"
+  bookify-redis:
+    image: "docker.io/library/redis:8.6"
+    command:
+      - "-c"
+      - "redis-server --requirepass $$REDIS_PASSWORD"
+    entrypoint:
+      - "/bin/sh"
+    environment:
+      REDIS_PASSWORD: "${BOOKIFY_REDIS_PASSWORD}"
+    expose:
+      - "6379"
+    networks:
+      - "aspire"
+  bookify-api:
+    image: "${BOOKIFY_API_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${BOOKIFY_API_PORT}"
+      ConnectionStrings__bookify: "Host=bookify-db;Port=5432;Username=postgres;Password=${BOOKIFY_DB_PASSWORD};Database=bookify"
+      BOOKIFY_HOST: "bookify-db"
+      BOOKIFY_PORT: "5432"
+      BOOKIFY_USERNAME: "postgres"
+      BOOKIFY_PASSWORD: "${BOOKIFY_DB_PASSWORD}"
+      BOOKIFY_URI: "postgresql://postgres:${BOOKIFY_DB_PASSWORD}@bookify-db:5432/bookify"
+      BOOKIFY_JDBCCONNECTIONSTRING: "jdbc:postgresql://bookify-db:5432/bookify"
+      BOOKIFY_DATABASENAME: "bookify"
+      ConnectionStrings__bookify-redis: "bookify-redis:6379,password=${BOOKIFY_REDIS_PASSWORD}"
+      BOOKIFY_REDIS_HOST: "bookify-redis"
+      BOOKIFY_REDIS_PORT: "6379"
+      BOOKIFY_REDIS_PASSWORD: "${BOOKIFY_REDIS_PASSWORD}"
+      BOOKIFY_REDIS_URI: "redis://:${BOOKIFY_REDIS_PASSWORD}@bookify-redis:6379"
+      services__keycloak__https__0: "${KEYCLOAKURL}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "bookify-api"
+    ports:
+      - "${BOOKIFY_API_PORT}"
+    depends_on:
+      bookify-db:
+        condition: "service_started"
+      bookify-redis:
+        condition: "service_started"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"
+volumes:
+  bookify.apphost-859b4fcc47-bookify-db-data:
+    driver: "local"
